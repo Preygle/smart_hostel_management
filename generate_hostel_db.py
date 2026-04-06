@@ -1,13 +1,18 @@
 import random
 import string
+import os
+from dotenv import load_dotenv
 from datetime import datetime
 from pymongo import MongoClient, ASCENDING
 
 # ════════════════════════════════════════════════
 #  🔧 CONFIGURE THIS BEFORE RUNNING
 # ════════════════════════════════════════════════
-# Replace 'xxxxx' with your real cluster ID from Atlas!
-MONGO_URI = "mongodb+srv://mayankthakur827_db_user:M%40y%40nk310805@hostel-cluster.at0ov7b.mongodb.net/?appName=hostel-cluster"
+# Loads MONGO_URI from server/.env securely
+load_dotenv("server/.env")
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("🚨 MONGO_URI is missing from server/.env")
 DB_NAME   = "hostel_db"
 # ════════════════════════════════════════════════
 

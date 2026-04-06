@@ -1,271 +1,406 @@
-# SmartHostel AI 🏠⚡
+# SmartHostel AI 🏠
 
 > **Intelligent Hostel Operations & Management Platform**  
 > Solve-A-Thon 2026 · VIT Chennai · PS-002 · Team of 5
 
-[![Tech Stack](https://img.shields.io/badge/Stack-React%20%7C%20Node.js%20%7C%20MongoDB%20%7C%20Python-blue)]()
-[![PS Coverage](https://img.shields.io/badge/PS%20Requirements-5%2F5%20Covered-brightgreen)]()
-[![AI Powered](https://img.shields.io/badge/AI-NLP%20%7C%20Anomaly%20%7C%20Prediction-purple)]()
+[![Stack](https://img.shields.io/badge/Stack-React%20%7C%20Node.js%20%7C%20MongoDB-blue)]()
+[![AI](https://img.shields.io/badge/AI-Google%20Gemini%20API-purple)]()
+[![Real-time](https://img.shields.io/badge/Real--Time-Socket.io-black)]()
+[![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-green)]()
+[![Frontend](https://img.shields.io/badge/Frontend-Vite%20%7C%20React%2019-cyan)]()
+
 
 ---
 
-## 🎯 One-Line Pitch
-
-> *"We built a centralized, easy-to-use hostel management solution — and then we made it intelligent. SmartHostel AI automates routine operations, predicts issues before they occur, and improves student safety in real-time — for 8,000 students across 4 hostels."*
-
----
-
-## ✅ PS-002 Requirement Coverage
+## ✅ Problem Statement Requirement Coverage
 
 | # | Requirement | Module | Status |
-|---|------------|--------|--------|
-| 1 | Student records & room allocation | Room Allocation Grid | ✅ |
-| 2 | Maintenance requests & complaints | Smart Complaint + AI Routing | ✅ |
-| 3 | Late entry / activity logs | Gatepass + Attendance + Entry Logs | ✅ |
-| 4 | Admin dashboard | Analytics Dashboard | ✅ |
-| 5 | Student information access | Student Self-Service Portal | ✅ |
-| + | Data privacy & RBAC | JWT Auth + Role Middleware | ✅ |
-| + | AI Intelligence Layer (differentiator) | Flask AI Microservice | ✅ |
+|---|---|---|---|
+| 1 | Student records & room allocation | Hostel Info (Block → Floor → Room Explorer) | ✅ |
+| 2 | Maintenance requests & complaints | Smart Complaint System (Dual-Severity NLP AI) | ✅ |
+| 3 | Late entry / activity logs | Gatepass + Attendance + Students Desk | ✅ |
+| 4 | Admin dashboard | Real-time Analytics Dashboard | ✅ |
+| 5 | Student information access | Full Student Self-Service Portal | ✅ |
+| + | Data privacy & RBAC | JWT Auth + Role-based middleware | ✅ |
+| + | AI Intelligence Layer | OpenRouter LLM + Face Liveness Detection | ✅ |
 
 ---
 
-## 🏗️ Architecture
+## 🚀 Complete Feature List
+
+---
+
+### 🤖 AI CHATBOT — SmartHostel AI Assistant
+
+The flagship feature. Replaces all hardcoded frontend rule-based logic.
+
+| Sub-Feature | Details |
+|---|---|
+| **LLM Engine** | OpenRouter `qwen/qwen3.6-plus:free` model via official `openai` SDK |
+| **Natural Language Understanding** | Parses typos, casual speech, "story-based" excuse writing, multilingual intent |
+| **Structured JSON Responses** | LLM outputs `{ type, text, preview, actions }` — no markdown wrapping |
+| **Dynamic Preview Cards** | Chat bubble renders interactive Submit/Cancel cards from `type: "preview"` |
+| **Multi-turn Memory** | Full conversation history is sent on every request for contextual continuity |
+| **Context Awareness** | Auto-fetches user room, laundry day, mess crowd, complaints & gatepass history via `GET /api/v1/chatbot/context` |
+| **Outing Validation** | LLM enforces 8AM–6PM only, max 2h weekdays / 6h weekends — rejecting violations naturally |
+| **Leave Validation** | LLM enforces minimum 24-hour / 1 full-day leave duration |
+| **Error Resilience** | Strips markdown code fences from LLM output before JSON parsing; falls back gracefully |
+| **Chatbot Float Pattern** | ChatBot bubble mounts in `AppShell.jsx` bottom-right; state persists across route changes |
+
+---
+
+### 🚪 GATEPASS & LEAVE SYSTEM
+
+| Sub-Feature | Details |
+|---|---|
+| **Apply Gatepass / Outing** | Form-based apply with time pickers, destination, reason fields |
+| **Apply Leave** | Separate Leave form, requires guardian name + phone + relation |
+| **Type Enforcement** | Types: `Outing`, `Leave`, `Hospital` — each with unique validation |
+| **Outing Rules** | 8AM–6PM only; same-day; max 2h weekdays / 6h weekends |
+| **Leave Rules** | Minimum 1 full day (24h); no maximum duration |
+| **QR Code Generation** | Warden-approved gatepasses get a unique `qr_token` rendered as scannable QR |
+| **Guard Entry/Exit Scan** | Guards scan QR at hostel gate to mark `actual_exit` and `actual_return` |
+| **Status Lifecycle** | Pending → Approved / Rejected → Active → Returned / Expired / Recalled |
+| **Overdue Detection** | `is_overdue` flag auto-set when `actual_return > expected_return` |
+| **Late Return Window** | Students get 1-hour window after overdue return to submit excuse text |
+| **My Gatepass View** | Student portal timeline with status badges, dates, destination, QR preview |
+| **Admin Gatepass Management** | Warden approve/reject with optional note; full log view |
+
+---
+
+### 🏃 STUDENTS DESK (ADMIN — LATE RETURN MANAGEMENT)
+
+| Sub-Feature | Details |
+|---|---|
+| **Late Arrivals Feed** | Live list of all students with `is_overdue` gatepasses |
+| **Student Excuse Display** | Shows student-submitted excuse text with timestamp |
+| **Warden Decision** | Warden selects: Ask To Meet / Clear Student / Portal Call Follow-up |
+| **Warden Message** | Typed message saved and displayed to guard at re-entry scan |
+| **🔊 Audio Warden Note** | "Listen" button plays TTS of the warden's note (base64 audio stream) |
+| **Portal Voice Call** | Real-time in-browser WebRTC/WebSocket call between warden and student |
+| **Call Transcript Log** | After call, warden pastes transcript or uses Sarvam AI transcription |
+| **Call Not Picked Flag** | One-click mark if student doesn't answer |
+| **Flagged Students Panel** | Searchable list of all students with active flags, sorted by weighted severity score |
+| **Severity Scoring** | `suspicious_flag_count ×4` + `outing_flag_count ×3` + `community_strikes ×2` + `dhobi_offence ×1` |
+
+---
+
+### 📋 COMPLAINTS SYSTEM
+
+| Sub-Feature | Details |
+|---|---|
+| **Raise Complaint** | Category, description, severity — submitted by student |
+| **AI Dual-Severity Scoring** | NLP urgency detection on student text + system-level rules (e.g. Electrical→High, Plumbing leak→High); takes `MAX()` |
+| **Categories** | Electrical, Plumbing, Civil, Housekeeping, Pest Control, Internet, Other |
+| **SLA Timers** | Each complaint tracked against expected resolution time |
+| **Systemic Flag Detection** | Admin flags complaints affecting multiple rooms as `is_systemic` |
+| **Complaint Heatmap** | Admin analytics showing complaint density by floor |
+| **My Complaints View** | Student sees personal complaint history with status badges |
+| **Admin Complaint Dashboard** | Full overview with priority queue, status filters, and SLA breach indicators |
+
+---
+
+### 🧾 ATTENDANCE SYSTEM
+
+| Sub-Feature | Details |
+|---|---|
+| **Night Attendance Window** | Warden opens/closes attendance window per block — students can only check-in when open |
+| **Face Liveness Detection** | Student clicks "Mark Attendance" → opens `FaceCheckModal` → webcam liveness check |
+| **Face Check Modal** | `FaceCheckModal.jsx` handles webcam access, liveness blink/nod detection, confidence score |
+| **30-second Auto-Poll** | Attendance page polls window status every 30s; shows 🟢 OPEN / 🔴 CLOSED live |
+| **Attendance History** | Last 30 days records with status (Present / Absent / On Leave / On Outing) |
+| **Attendance Ring Chart** | SVG ring showing % attendance colored green/yellow/red |
+| **Status: On Leave / On Outing** | Gatepass system auto-marks attendance when student is out |
+| **Admin Attendance View** | Floor-level attendance grid; anomaly detection for 3+ consecutive absences |
+
+---
+
+### 🍽️ MESS SYSTEM
+
+| Sub-Feature | Details |
+|---|---|
+| **Weekly Menu** | Full 7-day menu across Veg, Non-Veg, and Special caterers |
+| **4 Meals Per Day** | Breakfast, Lunch, Snacks, Dinner — each with items, caterer, and nutrition |
+| **Nutrition Pills** | Per-meal Protein / Carbs / Fat / Fiber / Kcal displayed as compact pills |
+| **Live Crowd Prediction** | Time-of-day heuristic algorithm (peak / off-peak / very high) with fill % |
+| **Crowd Alert Banner** | Warning banner shown when mess fill % is above 70% |
+| **Meal Attendance Marking** | Student marks `Ate` / `Skipped` per meal for crowd prediction use |
+| **Anonymous Feedback System** | Student rates Taste / Quality / Quantity / Hygiene / Variety (1–5) per meal — identity hidden from staff |
+| **Day Selector** | Tab bar to view any day's menu with Mon–Sun navigation |
+| **Admin Mess Management** | Warden/Admin edits weekly menu, assigns caterers, manages night mess items |
+
+---
+
+### 🌙 NIGHT MESS
+
+| Sub-Feature | Details |
+|---|---|
+| **Browse Night Menu** | Available items with name, description, category, prep time, stock count, price |
+| **Cart & Quantity** | +/– quantity per item; total automatically computed |
+| **Pre-pay & Order** | Advance payment model — order is placed and paid before preparation |
+| **Order History** | Student sees all past night orders with status: Pending / Ready / OutOfStock / NotCollected |
+| **Refund Policy** | Out-of-stock → full refund; Not collected → 25% fine, rest refunded |
+| **Fine & Refund Display** | Shows refund_amount, fine_amount, note in order history |
+
+---
+
+### 👕 LAUNDRY (CHOTA DHOBI)
+
+| Sub-Feature | Details |
+|---|---|
+| **Room-Based Schedule** | Laundry day deterministically assigned from room number (`room_no % 7`) |
+| **Is Laundry Day Detection** | Page shows context-aware state — "Not Your Day" or drop-off QR |
+| **Bag Drop-Off QR** | On laundry day, student shows QR to Dhobi staff to submit bag |
+| **Processing Status** | After drop-off, status changes to "Processing" with spinner |
+| **Ready for Pickup Banner** | When laundry is done, a green "Ready for Pickup!" banner replaces the QR |
+| **Socket.io Real-time** | `laundry:accepted`, `laundry:ready`, `laundry:out_of_schedule` events pushed live |
+| **Weekly Schedule Table** | Full day-by-day schedule table showing room ranges and room counts |
+| **Laundry Offence Tracking** | Dropping bags outside schedule increments `dhobi_offence` flag on student profile |
+
+---
+
+### 🏠 HOSTEL INFO (ROOM EXPLORER — ADMIN)
+
+| Sub-Feature | Details |
+|---|---|
+| **Multi-Block Selector** | A Block (live), B/C/D1/D2/E blocks (locked/coming soon) |
+| **Floor Stack Panel** | Visual vertical stack of all 15 floors — hover to highlight, click to select |
+| **Floor Canvas** | 2D floor plan of all rooms in the selected floor, color-coded by occupancy |
+| **Complaint Heatmap Overlay** | Floor canvas overlaid with complaint density data per floor |
+| **Room Detail Modal** | Click any room → modal shows beds (AC/NAC), occupants, room type, bed assignments |
+| **Bed Assignment** | Admin can assign a student to a vacant bed from the modal |
+| **Block Summary Stats** | Total floors / rooms / avg occupancy shown in the floor selector pane |
+
+---
+
+### 💬 COMMUNITY FORUM (HOSTEL COMMUNITY)
+
+| Sub-Feature | Details |
+|---|---|
+| **Pseudonymous Posts** | Every student gets a random pseudonym + avatar color — identity hidden from peers |
+| **Categories** | General, Lost & Found, Book Exchange, Events, Questions, Memes, Rant, Hostel Feedback |
+| **Sort Modes** | Hot (engagement-weighted), New, Top (all-time votes) |
+| **Voting** | Upvote / Downvote on posts and replies; live vote score update |
+| **Threading** | Nested replies under each post with their own vote counts |
+| **Tag System** | Comma-separated optional tags on posts; trending tag cloud in sidebar |
+| **Full-text Search** | Keyword search across post titles and content |
+| **Trending Sidebar** | Hot posts today, trending tag cloud, hot categories |
+| **Hostel Feedback Visibility** | Posts in "Hostel Feedback" category are flagged as visible to wardens |
+| **AI Moderation** | Post content runs through toxicity scoring; flagged if over threshold |
+| **Strike System** | 3 strikes → automatic community ban; warden can lift ban |
+| **Banned State** | Banned students see ban banner; create post and reply disabled |
+| **Admin Community Intelligence** | Mood Index (0–100), total posts, flagged count, banned user count |
+| **Admin Flagged Posts** | Full list with toxicity %, reveal real identity (name + room + block) |
+| **Ban Management Tab** | View all banned users; lift ban with one click |
+| **Admin Trending Tab** | Tag cloud + hot posts + category activity analytics |
+| **7-Day Activity Trend Chart** | Bar chart of daily post volume, colored by toxicity level |
+
+---
+
+### 🏥 HEALTH SOS
+
+| Sub-Feature | Details |
+|---|---|
+| **Emergency Trigger** | Student one-tap SOS with severity level selection |
+| **Simultaneous Alerts** | Alert dispatched to wardens, guards, and floor admins instantly via Socket.io |
+| **Health Events Admin View** | Admin sees all SOS events with student info, severity, timestamp, resolution status |
+
+---
+
+### 📢 ANNOUNCEMENTS
+
+| Sub-Feature | Details |
+|---|---|
+| **Admin Broadcast** | Admin creates announcements pushed to all connected students via Socket.io |
+| **Student Announcement View** | Students see active announcements in a dedicated panel |
+
+---
+
+### 👔 STAFF DIRECTORY
+
+| Sub-Feature | Details |
+|---|---|
+| **Staff Contact Cards** | Name, role, shift, contact number displayed for all hostel staff |
+| **Roles Covered** | Warden, Guard, Housekeeping, Mess Staff, Admin |
+
+---
+
+### 👤 STUDENT PROFILE
+
+| Sub-Feature | Details |
+|---|---|
+| **Profile View** | Student sees name, register number, room, floor, block, bed type, mess assignment |
+| **Virtual Fields** | `floor_no`, `bed_id`, `mess_information` derived from schema virtuals |
+
+---
+
+### 🧑‍💼 GUEST REQUEST
+
+| Sub-Feature | Details |
+|---|---|
+| **Guest Application** | Student requests an external visitor pass |
+| **Warden Approval** | Warden reviews and approves/rejects guest request |
+| **QR Guest Pass** | Approved guest gets a QR pass for guard scan at entry |
+
+---
+
+### 👤 PORTAL VOICE CALLS (WARDEN ↔ STUDENT)
+
+| Sub-Feature | Details |
+|---|---|
+| **WebSocket Call** | In-browser voice call initiated from Students Desk by warden |
+| **Student Call Widget** | Student receives ringing notification and can accept/reject |
+| **Call Store** | Global Zustand store (`callStore.js`) manages call state across routes |
+| **Language Hint** | Call language (Tamil / Hindi / Hinglish / English) stored per call |
+
+---
+
+### 📊 ADMIN ANALYTICS DASHBOARD
+
+| Sub-Feature | Details |
+|---|---|
+| **Real-time Health Score Ring** | SVG ring chart showing overall hostel health % |
+| **Live Charts** | Recharts-powered bar/line charts for attendance trends, complaint types |
+| **Socket.io Live Alerts** | Push alerts as events happen (SOS, late return, new complaint) |
+| **Complaint Heatmap** | Floor-level density chart of complaints |
+| **Room Occupancy Stats** | Live fill rates from room collection |
+| **Announcement Panel** | All active announcements visible from dashboard |
+
+---
+
+### 🔐 AUTHENTICATION & RBAC
+
+| Sub-Feature | Details |
+|---|---|
+| **JWT Authentication** | 7-day token signed with `JWT_SECRET`; stored in localStorage |
+| **5 Roles** | `student`, `warden`, `admin`, `security` (guard) |
+| **Role-based Routing** | `App.jsx` redirects based on `user.role` post-login |
+| **Middleware Guard** | `authenticate` middleware validates JWT; `authorize(roles)` checks role |
+| **Route Protection** | Protected routes check token on every API call |
+
+| Module | Student | Guard | Warden | Admin |
+|---|---|---|---|---|
+| Gatepass | Apply + view own | Scan QR | Approve / Reject | Full logs |
+| Complaints | Raise + view own | — | View + update | Full analytics |
+| Attendance | View own + face check-in | — | Open/close window | Full CRUD + anomaly |
+| Community | Post + vote | — | View feedback | Moderate + ban |
+| Room Explorer | — | — | Floor view | Block → Room full access |
+| Students Desk | — | — | Full | Full |
+| Night Mess | Order | — | Manage items | Full |
+| Laundry | View + QR | Scan | — | Schedule admin |
+
+---
+
+
+### 🗄️ DATABASE SCHEMAS (MongoDB / Mongoose)
+
+| Model | Key Fields |
+|---|---|
+| **User** | `name`, `register_number`, `password` (bcrypt), `role`, `room_no`, `floor_no`, `block_name`, `bed_type`, `bed_id`, `mess_information`, `is_flagged`, `outing_flag_count`, `suspicious_flag_count`, `community_strikes`, `dhobi_offence` |
+| **Gatepass** | `student_id`, `type (Outing/Leave/Hospital)`, `destination`, `reason`, `expected_exit`, `expected_return`, `guardian_name/phone/relation`, `status`, `qr_token`, `actual_exit`, `actual_return`, `is_overdue`, `late_return_count`, `late_return` (sub-doc: excuse_text, warden_decision, call_status, call_transcript) |
+| **Complaint** | `raised_by`, `title`, `category`, `severity`, `status`, `sla_breached`, `is_systemic`, `raised_at` |
+| **Attendance** | `student_id`, `date`, `status`, `method (face/manual/wifi)` |
+| **Mess** | `day`, `meal_type`, `caterer`, `items` (with nutrition), `menu_name` |
+| **LaundrySession** | `student_id`, `status`, `qr_token`, `assigned_day` |
+| **CommunityPost** | `author_id`, `pseudonym`, `avatar_color`, `title`, `content`, `category`, `tags`, `upvote_count`, `downvote_count`, `vote_score`, `toxicity_score`, `flagged`, `flag_reason`, `replies` (sub-docs) |
+| **Announcement** | `title`, `content`, `created_by`, `active` |
+| **HealthEvent** | `triggered_by`, `severity`, `location`, `resolved_at` |
+| **Guest** | `student_id`, `guest_name`, `visit_date`, `status`, `qr_token` |
+| **ChatSession** | `student_id`, `history` (messages array) |
+| **Room** | `room_no`, `floor_no`, `block_name`, `beds` (array with `bed_id`, `student_id`, `is_occupied`, `type`) |
+| **Block** | `name`, `total_floors`, `total_rooms` |
+| **Staff** | `name`, `role`, `shift`, `phone`, `block_name` |
+
+---
+
+## 🏗️ Project Structure
 
 ```
-smarthostel-ai/
-├── client/          ← React 19 + Tailwind CSS (Frontend)
-├── server/          ← Node.js + Express + Socket.io (Backend API)
-├── ai-service/      ← Python Flask (AI Microservice)
-├── scripts/seed/    ← MongoDB seeder (200+ realistic records)
-├── shared/          ← Shared constants + API endpoints
-└── docs/            ← PRD, design, pitch materials
+smart_hostel_management/
+├── client/
+│   └── src/
+│       ├── pages/
+│       │   ├── student/        ← Dashboard, Mess, NightMess, Laundry,
+│       │   │                      Attendance, MyGatepass, ApplyGatepass,
+│       │   │                      MyComplaints, RaiseComplaint, Community,
+│       │   │                      GuestRequest, NightMess, Profile
+│       │   └── admin/          ← Dashboard, RoomAllocation, HostelInfo,
+│       │                          AttendanceView, ComplaintDashboard,
+│       │                          MessManagement, GatepassManagement,
+│       │                          Announcements, StudentsDesk,
+│       │                          CommunitySentiment, HealthEvents,
+│       │                          StaffDirectory
+│       ├── components/
+│       │   ├── ChatBot/        ← ChatBot.jsx + handlers
+│       │   ├── FaceCheckModal.jsx (liveness detection)
+│       │   ├── calls/          ← Portal voice call components
+│       │   └── hostel/         ← FloorStack, FloorCanvas, RoomDetailModal
+│       ├── store/              ← Zustand: authStore, callStore
+│       ├── lib/api.js          ← Axios instance + Vite proxy
+│       └── hooks/useSocket.js  ← Socket.io connection hook
+│
+├── server/
+│   └── src/
+│       ├── routes/             ← auth, users, rooms, gatepass, complaints,
+│       │                          attendance, mess, laundry, community,
+│       │                          chatbot, announcements, health, guests,
+│       │                          analytics, staff
+│       ├── models/             ← All 14 Mongoose models
+│       └── middleware/         ← auth.js (JWT), errorHandler.js, rbac.js
+│
+├── generate_hostel_db.py       ← Python MongoDB seeder
+└── AI.md                       ← LLM context document
 ```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19 + Tailwind CSS v4 + Recharts + Socket.io |
-| Backend | Node.js 20 + Express + Socket.io + JWT |
-| Database | MongoDB Atlas (hostel_db) |
-| AI Service | Python 3.11 + Flask + NLP classifier |
-| Auth | JWT + Role-based middleware (5 roles) |
-| Real-time | Socket.io (live dashboard + alerts) |
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Node.js 18+
-- Python 3.9+
-- MongoDB (local or Atlas)
-
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-team/smarthostel-ai
-cd smarthostel-ai
-npm install            # root (concurrently)
+git clone https://github.com/Preygle/smart_hostel_management.git
+cd smart_hostel_management
 cd server && npm install
 cd ../client && npm install
-cd ..
-pip install flask flask-cors pymongo bcrypt
 ```
 
-### 2. Environment Setup
+### 2. Environment Setup (`server/.env`)
 
-```bash
-cp server/.env.example server/.env
-# Edit server/.env with your MONGO_URI and JWT_SECRET
-```
-
-`.env` variables:
 ```env
 PORT=5000
 NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/hostel_db
-# or: mongodb+srv://<user>:<pass>@hostel-cluster.xxx.mongodb.net/hostel_db
+MONGO_URI=mongodb+srv://<user>:<pass>@hostel-cluster.mongodb.net/?appName=hostel-cluster
 JWT_SECRET=smarthostel_super_secret_2026
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
-AI_SERVICE_URL=http://localhost:5001
+openrouter-qwen=sk-or-v1-your-openrouter-key-here
+gemini=your-gemini-key-here
 ```
 
-### 3. Seed the Database
+
+### 3. Run
 
 ```bash
-# Set MONGO_URI environment variable first (or edit the script)
-cd scripts/seed
-MONGO_URI="mongodb://localhost:27017/hostel_db" python generate_hostel_db.py
-```
+# Terminal 1 — Backend
+cd server && npm run dev   # :5000
 
-This seeds:
-- ✅ 1 block (A Block — 15 floors × 60 rooms)
-- ✅ 12 staff (wardens, guards, mess, housekeeping, admin)
-- ✅ 200 students (Hindu 70%, Muslim 15%, Christian 10%, Jain 3%, Jew 2%)
-- ✅ Rooms for floors 1–5
-- ✅ 60 complaints (all categories, statuses, SLA data)
-- ✅ 40 gatepasses (various statuses)
-- ✅ 7 days of attendance records (~150 students/day)
-- ✅ Full week mess menu (Breakfast, Lunch, Dinner)
-- ✅ 3 announcements
-
-### 4. Run All Services
-
-```bash
-# In project root — runs all 3 services concurrently
-npm run dev
-```
-
-Or run individually:
-```bash
-npm run dev:server    # Node.js API on :5000
-npm run dev:client    # Vite React on :5173
-npm run dev:ai        # Flask AI on :5001
+# Terminal 2 — Frontend  
+cd client && npm run dev   # :5173
 ```
 
 ---
 
-## 🔐 Demo Login Credentials
+## 🔐 Demo Credentials
 
 | Role | Register Number | Password |
-|------|----------------|----------|
-| Student | `23BCE1001` | `Student@123` |
-| Warden | `WARDN02` | `Warden@123` |
-| Hostel Admin | `HOSTEL01` | `Hostel_admin@123` |
-| Guard | `GUARD12` | `Guard@123` |
-
-> 💡 **Quick login** — click any demo account button on the login page to auto-fill credentials
+|---|---|---|
+| **Student** | `23BEC1106` | `S7wJ0UlaKN` |
+| **Warden** | `114812` | `$2b$12$QRmZvMAjiePVrB1tv5Sf8Og//3JluqyZhFklmKhNHfBpPH1PJ4j4K` |
+| **Dhobi** | `316600` | `$2b$12$LRjqA.G9YWWynWqFVFjTHuivwCj6ahXDi.DVX6EYd1.f9qeX8aiOm` |
+| **Guard** | `114900` | `$2b$12$examplehashedpasswordstring` |
 
 ---
 
-## 🧩 Module Overview
-
-### Tier 1 — Fully Working (All 5 PS Requirements)
-
-| Module | Description | PS Req |
-|--------|-------------|--------|
-| **Room Allocation** | Visual 15-floor × 60-room grid, color-coded occupancy, bed assignment modal | #1 |
-| **Smart Complaints** | AI NLP routing, SLA timers, heatmap, systemic flag detection | #2 |
-| **Digital Gatepass** | Apply → Approve → QR → Guard scan → Entry log | #3 |
-| **Smart Attendance** | WiFi passive + QR fallback, floor view, anomaly detection | #3 |
-| **Admin Dashboard** | Health score ring, live charts, real-time alerts via Socket.io | #4 |
-| **Student Portal** | Mess menu, laundry, complaints, gatepass status — all in one screen | #5 |
-
-### Tier 2 — Additional Modules
-
-| Module | Description |
-|--------|-------------|
-| **Health SOS** | One-tap emergency with severity selection, simultaneous alerts |
-| **Mess Management** | Weekly menu admin, crowd prediction, night orders |
-| **Guest Management** | Request → warden approve → QR pass → guard scan |
-| **Announcements** | Push to all students instantly via Socket.io |
-| **Staff Directory** | Contact cards with shift timings |
-
----
-
-## 🧠 AI Intelligence Layer
-
-All AI logic lives in `ai-service/main.py` (Python Flask):
-
-| Feature | Description |
-|---------|-------------|
-| **NLP Complaint Classifier** | Keyword + regex matching routes to: Electrical / Plumbing / Civil / Housekeeping / Pest Control / Internet |
-| **Urgency Scoring** | Urgency modifier detection (e.g., "urgent", "flood", "emergency") boosts score |
-| **Mess Crowd Prediction** | Time-of-day heuristic with weekend boost and random variation |
-| **Attendance Anomaly** | Consecutive absence detector with alert threshold (≥3 nights) |
-| **Face Recognition Stub** | Demo mode with realistic confidence scores (high for known faces, low for unknown) |
-
----
-
-## 📡 API Endpoints (Key)
-
-All strings defined in `shared/api-endpoints.js` — never hardcode URLs.
-
-```
-POST   /api/v1/auth/login           # Login (register_number + password)
-GET    /api/v1/rooms/grid           # Visual room grid
-POST   /api/v1/rooms/assign         # Assign student to bed
-POST   /api/v1/complaints           # Raise complaint (AI auto-classifies)
-POST   /api/v1/complaints/classify  # Standalone AI classification
-PUT    /api/v1/gatepass/:id/approve # Warden approves gatepass + generates QR
-POST   /api/v1/gatepass/scan/exit   # Guard scans QR at exit
-POST   /api/v1/gatepass/scan/entry  # Guard scans QR at re-entry
-POST   /api/v1/attendance/wifi/sync # WiFi-based bulk attendance marking
-GET    /api/v1/analytics/overview   # Admin dashboard stats
-POST   /api/v1/health/sos           # Student triggers emergency SOS
-```
-
----
-
-## 🛡️ Role-Based Access Control
-
-| Module | Student | Guard | Floor Admin | Warden | Hostel Admin |
-|--------|---------|-------|-------------|--------|--------------|
-| Room Allocation | Read own | Read basic | Read floor | Read + assign | Full CRUD |
-| Complaints | Create + view own | — | View floor | View + update | Full analytics |
-| Gatepass | Apply + view own | Scan | View floor | Approve/reject | Full logs |
-| Attendance | View own | — | View floor | View hostel | Full |
-| Dashboard | — | Alerts only | Floor view | Hostel view | Full analytics |
-| Health SOS | Trigger | Notified | Notified | Notified + act | Analytics |
-
----
-
-## 👥 Team Structure
-
-| Member | Role | Owns |
-|--------|------|------|
-| Dev 1 | Backend Lead | `server/` |
-| Dev 2 | Frontend Lead | `client/` |
-| Dev 3 | AI & Intelligence Lead | `ai-service/` |
-| Dev 4 | Integration & DevOps Lead | `scripts/` + `infra/` |
-| Designer | UX & Pitch Lead | `docs/` + `design/` |
-
-> **Golden Rule**: No two people edit the same file. `shared/` requires a group-chat announcement before any push.
-
----
-
-## 📊 Impact Numbers (For Demo)
-
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Complaint resolution time | ~24 hours | <2 hours | **12× faster** |
-| Attendance marking | 45 min/night | 0 min | **100% automated** |
-| Gatepass approval time | 30-60 min | <15 min | **3× faster** |
-| Emergency response time | 10-15 min | <3 min | **5× faster** |
-| Room occupancy check | 20+ min manual | <10 sec | **120× faster** |
-| Mess overcrowding | Unpredictable | Predicted | **40% reduction** |
-
----
-
-## 🏆 Demo Script (4 Minutes)
-
-1. **Scene 1 (0:00–0:25)** — Hook: "This is how 8,000 students are managed tonight" (paper register photo)
-2. **Scene 2 (0:25–1:00)** — Room Grid: Drag student into vacant bed, 10 seconds to check occupancy
-3. **Scene 3 (1:00–1:35)** — AI Complaint: Type "fan not working" → auto-routed in 2 seconds
-4. **Scene 4 (1:35–2:05)** — Attendance: 847/1000 present, floor 7 flagged, zero manual effort
-5. **Scene 5 (2:05–2:35)** — Admin Dashboard: Heatmap, health score, live charts
-6. **Scene 6 (2:35–3:00)** — Student Portal: Everything on one screen, no office visit
-7. **Scene 7 (3:00–3:35)** — SOS: Alert in 8 seconds, face recognition confidence
-8. **Scene 8 (3:35–4:00)** — Close: Before/after + impact numbers
-
----
-
-## 📁 Key Files Reference
-
-| File | Purpose |
-|------|---------|
-| `shared/constants.js` | All roles, statuses, categories |
-| `shared/api-endpoints.js` | All API URL strings |
-| `server/src/app.js` | Express app setup |
-| `server/src/middleware/rbac.js` | Role-based access control |
-| `client/src/index.css` | Full design system (dark mode) |
-| `client/src/App.jsx` | React router with role-based protection |
-| `ai-service/main.py` | NLP + anomaly + crowd + face recognition |
-| `scripts/seed/generate_hostel_db.py` | Database seeder |
-
----
 
 *SmartHostel AI · PS-002 · Solve-A-Thon 2026 · VIT Chennai*
